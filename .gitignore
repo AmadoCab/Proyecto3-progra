@@ -178,5 +178,6 @@ dmypy.json
 anotaciones.txt
 *.jpg
 *.jpeg
+/Images
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,macos,jupyternotebooks
