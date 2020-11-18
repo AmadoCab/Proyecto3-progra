@@ -2,6 +2,8 @@ from PIL import Image, ImageColor, ImageDraw, ImageOps, ImageFont
 import os
 import numpy as np
 import datetime
+from decouple import config
+import tweepy
 
 chars = {
     '4ch' : list('@XF-'),
@@ -56,8 +58,17 @@ class ImgToAscii:
         draw.multiline_text((0,0), self.imgstr, fill=0, font=fnt)
         txtimg.save('dibujoletras.jpg')
 
+    def tweet(self):
+        consumer_key = config('API_KEY')
+        consumer_secret = config('API_SECRET_KEY')
+        access_token = config('ACCESS_TOKEN')
+        access_token_secret = config('ACCESS_SECRET_TOKEN')
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
+        api = tweepy.API(auth)
+
 if __name__ == "__main__":
-    imagen = ImgToAscii('Images/cont.jpeg',0.3,'16ch')
+    imagen = ImgToAscii('Images/Amadito.jpeg',0.3,'16ch')
     imagen.to_blackwhite()
     imagen.rescale()
     imagen.imgmatrix()

@@ -179,5 +179,6 @@ anotaciones.txt
 *.jpg
 *.jpeg
 /Images
+twepitry.py
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,macos,jupyternotebooks
