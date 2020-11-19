@@ -4,6 +4,7 @@ import numpy as np
 import datetime
 from decouple import config
 import tweepy
+import webbrowser
 
 chars = {
     '4ch' : list('@XF-'),
@@ -61,18 +62,24 @@ class ImgToAscii:
     def tweet(self):
         consumer_key = config('API_KEY')
         consumer_secret = config('API_SECRET_KEY')
-        access_token = config('ACCESS_TOKEN')
-        access_token_secret = config('ACCESS_SECRET_TOKEN')
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        webbrowser.open(auth.get_authorization_url())
+        pin = input('Verification pin number from twitter.com: ').strip()
+        token = auth.get_access_token(verifier=pin)
+        access_token = token[0]
+        access_token_secret = token[1]
         auth.set_access_token(access_token, access_token_secret)
         api = tweepy.API(auth)
+        loqeusea = api.media_upload('dibujoletras.jpg')
+        api.update_status('',media_ids=[loqeusea.media_id])
 
 if __name__ == "__main__":
-    imagen = ImgToAscii('Images/Amadito.jpeg',0.3,'16ch')
+    imagen = ImgToAscii('Images/Kanis.jpeg',0.3,'16ch')
     imagen.to_blackwhite()
     imagen.rescale()
     imagen.imgmatrix()
-    imagen.to_print()
+    # imagen.to_print()
     imagen.to_pic()
+    imagen.tweet()
 
 #
