@@ -1,10 +1,10 @@
 from PIL import Image, ImageColor, ImageDraw, ImageOps, ImageFont
-import os
-import numpy as np
-import datetime
 from decouple import config
-import tweepy
+import numpy as np
 import webbrowser
+import datetime
+import tweepy
+import os
 
 chars = {
     '4ch' : list('@XF-'),
