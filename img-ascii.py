@@ -24,20 +24,30 @@ class ImgToAscii:
         self.input_img = Image.open(self.imgpath)
         self.width, self.height = self.input_img.size
         self.scale = scale
+        self.name = datetime.datetime.now()
         print(self.width, self.height)
 
     # Methods
     def to_blackwhite(self):
+        """
+        Converts the image to black and white
+        """
         self.working_img = ImageOps.grayscale(self.input_img)
         self.working_img.save('salida_colores.jpg')
         print(type(self.working_img))
 
     def rescale(self):
+        """
+        Rescales the image to a size that when the pixels get changed by characters it conserves its original appearence
+        """
         self.working_img = self.working_img.resize((int(self.width*17/10.9*self.scale), int(self.height*10.9/17*self.scale)))
         self.rewidth, self.reheight = self.working_img.size
         self.working_img.save('salida_resize.jpg')
 
     def imgmatrix(self):
+        """
+        Transfor the image to a matrix and replace the pixels to characters
+        """
         self.imgstr = ''
         self.matrix = np.asarray(self.working_img).transpose()
         for i in range(self.reheight):
@@ -47,21 +57,33 @@ class ImgToAscii:
             self.imgstr += '\n'
 
     def to_print(self):
+        """
+        Print in terminal the image
+        """
         print(self.imgstr)
 
     def to_doc(self):
-        with open(f'{datetime.datetime.now()}.txt', 'w') as f:
+        """
+        Write in a document the image
+        """
+        with open(f'{self.name}.txt', 'w') as f:
             f.write(self.imgstr)
 
     def to_pic(self):
+        """
+        Transfor the text on an image
+        """
         imgwidth, imgheight = self.matrix.shape
         txtimg = Image.new('L', (imgwidth*7,imgheight*17), color=2**8)
         draw = ImageDraw.Draw(txtimg)
         fnt = ImageFont.truetype('/Users/Macbook/Desktop/Python/PrograM/Proyecto 3/Font/IBMPlexMono-Medium.ttf',12)
         draw.multiline_text((0,0), self.imgstr, fill=0, font=fnt)
-        txtimg.save('dibujoletras.jpg')
+        txtimg.save(f'{self.name}.jpg')
 
     def tweet(self):
+        """
+        This method has to be preced by "to_pic" method to tweet the image produced by that method
+        """
         consumer_key = config('API_KEY')
         consumer_secret = config('API_SECRET_KEY')
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -78,12 +100,12 @@ class ImgToAscii:
             access_token, access_token_secret = get_credentials()
             auth.set_access_token(access_token, access_token_secret)
             api = tweepy.API(auth)
-        loqeusea = api.media_upload('dibujoletras.jpg')
-        api.update_status('',media_ids=[loqeusea.media_id])
+        loqeusea = api.media_upload(f'{self.name}.jpg')
+        api.update_status(f'#ASCIIArtPM1',media_ids=[loqeusea.media_id])
 
 def is_logged():
     """
-    más tardecito escribo
+    The method returns True or False if the program has the credentials of a user or not respectively
     """
     with open('credentials.txt', 'r') as f:
         if f.readline() == 'NOCREDENTIALS':
@@ -92,21 +114,30 @@ def is_logged():
             return True
 
 def get_credentials():
+    """
+    Takes the credentials of the user and returns it on a tuple
+    """
     with open('credentials.txt', 'r') as f:
         linea = f.readline().strip().split(',')
     return linea[1], linea[2]
 
 def login(nombre, key, skey):
+    """
+    Save the credentials
+    """
     cadena = f'{nombre},{key},{skey}'
     with open('credentials.txt', 'w') as f:
         f.write(cadena)
 
 def logout():
+    """
+    Erase the credentials
+    """
     with open('credentials.txt', 'w') as f:
         f.write('NOCREDENTIALS')
 
 if __name__ == "__main__":
-    imagen = ImgToAscii('Images/Kanis.jpeg',0.3,'16ch')
+    imagen = ImgToAscii('Images/Marianita.jpeg',0.3,'16ch')
     imagen.to_blackwhite()
     imagen.rescale()
     imagen.imgmatrix()
