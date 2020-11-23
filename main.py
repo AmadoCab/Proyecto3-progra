@@ -1,5 +1,6 @@
 import gi
 from webbrowser import open_new
+import img_ascii as ia
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -14,6 +15,10 @@ class MyWindow(Gtk.ApplicationWindow):
         Gtk.Window.__init__(self, title="Pic to Ascii-Art", application=app)
         self.set_default_size(500, 500)
 
+        ### VARIABLES ###
+
+        self.is_logged = ia.is_logged()
+
         ### CONTAINER ###
         
         grid = Gtk.Grid()
@@ -26,18 +31,18 @@ class MyWindow(Gtk.ApplicationWindow):
         ### ACTIONS ###
 
         # action without a state created (name, parameter type)
-        copy_action = Gio.SimpleAction.new("copy", None)
+        login_action = Gio.SimpleAction.new("login", None)
         # connected with the callback function
-        copy_action.connect("activate", self.copy_callback)
+        login_action.connect("activate", self.login_callback)
         # added to the window
-        self.add_action(copy_action)
+        self.add_action(login_action)
 
         # action without a state created (name, parameter type)
-        paste_action = Gio.SimpleAction.new("paste", None)
+        logout_action = Gio.SimpleAction.new("logout", None)
         # connected with the callback function
-        paste_action.connect("activate", self.paste_callback)
+        logout_action.connect("activate", self.logout_callback)
         # added to the window
-        self.add_action(paste_action)
+        self.add_action(logout_action)
 
         # action with a state created (name, parameter type, initial state)
         shape_action = Gio.SimpleAction.new_stateful(
@@ -68,12 +73,14 @@ class MyWindow(Gtk.ApplicationWindow):
         pass
 
     # callback function for copy_action
-    def copy_callback(self, action, parameter):
-        print("\"Copy\" activated")
+    def login_callback(self, action, parameter):
+        print("\"Login\" activated")
+        ia.get_logged()
 
     # callback function for paste_action
-    def paste_callback(self, action, parameter):
-        print("\"Paste\" activated")
+    def logout_callback(self, action, parameter):
+        print("\"Logout\" activated")
+        ia.logout()
 
     # callback function for shape_action
     def shape_callback(self, action, parameter):
@@ -82,7 +89,7 @@ class MyWindow(Gtk.ApplicationWindow):
         action.set_state(parameter)
 
     def source_callback(self, action, parameter):
-        open_new("https://github.com/AmadoCab/Proyecto2-progra")
+        open_new("https://github.com/AmadoCab/Proyecto3-progra")
 
     # callback function for about (see the AboutDialog example)
     def about_callback(self, action, parameter):
@@ -137,6 +144,13 @@ class MyApplication(Gtk.Application):
         self.add_action(new_action)
 
         # action without a state created
+        save_action = Gio.SimpleAction.new("save", None)
+        # action connected to the callback function
+        save_action.connect("activate", self.save_callback)
+        # action added to the application
+        self.add_action(save_action)
+
+        # action without a state created
         quit_action = Gio.SimpleAction.new("quit", None)
         # action connected to the callback function
         quit_action.connect("activate", self.quit_callback)
@@ -176,6 +190,11 @@ class MyApplication(Gtk.Application):
     # callback function for new
     def new_callback(self, action, parameter):
         print("You clicked \"New\"")
+        self.imagen = ia.ImgToAscii('Images/Amadito.jpeg')
+
+    # callback function for save
+    def save_callback(self, action, parameter):
+        print("You clicked \"Save\"")
 
     # callback function for quit
     def quit_callback(self, action, parameter):
