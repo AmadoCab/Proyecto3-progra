@@ -6,11 +6,11 @@
       <section>
         <item>
           <attribute name="label">Load Image</attribute>
-          <attribute name="action">app.new</attribute>
+          <attribute name="action">win.new</attribute>
         </item>
         <item>
           <attribute name="label">Save Ascii-Art</attribute>
-          <attribute name="action">app.save</attribute>
+          <attribute name="action">win.save</attribute>
         </item>
       </section>
     </submenu>

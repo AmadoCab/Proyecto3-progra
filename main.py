@@ -18,6 +18,7 @@ class MyWindow(Gtk.ApplicationWindow):
         ### VARIABLES ###
 
         self.is_logged = ia.is_logged()
+        self.path = ''
 
         ### CONTAINER ###
         
@@ -29,6 +30,20 @@ class MyWindow(Gtk.ApplicationWindow):
         # Buttons
 
         ### ACTIONS ###
+
+        # action without a state created
+        new_action = Gio.SimpleAction.new("new", None)
+        # action connected to the callback function
+        new_action.connect("activate", self.new_callback)
+        # action added to the application
+        self.add_action(new_action)
+
+        # action without a state created
+        save_action = Gio.SimpleAction.new("save", None)
+        # action connected to the callback function
+        save_action.connect("activate", self.save_callback)
+        # action added to the application
+        self.add_action(save_action)
 
         # action without a state created (name, parameter type)
         login_action = Gio.SimpleAction.new("login", None)
@@ -66,16 +81,62 @@ class MyWindow(Gtk.ApplicationWindow):
         # action added to the application
         self.add_action(source_action)
 
-    def startgame(self, widget):
-        pass
+    # callback function for new
+    def new_callback(self, action, widget):
+        print("You clicked \"New\"")
+        dialog = Gtk.FileChooserDialog(
+            title="Please choose a file",
+            parent=self,
+            action=Gtk.FileChooserAction.OPEN
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+        self.add_filters(dialog)
 
-    def set_play(self, widget):
-        pass
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.path = dialog.get_filename()
+        elif response == Gtk.ResponseType.CANCEL:
+            pass
+        dialog.destroy()
+
+    # filters for new function
+    def add_filters(self, dialog):
+        filter_img = Gtk.FileFilter()
+        filter_img.set_name("Images")
+        filter_img.add_pattern('*.jpeg')
+        filter_img.add_pattern('*.jpg')
+        filter_img.add_pattern('*.png')
+        filter_img.add_pattern('*.eps')
+        dialog.add_filter(filter_img)
+
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
+    # callback function for save
+    def save_callback(self, action, parameter):
+        print("You clicked \"Save\"")
 
     # callback function for copy_action
     def login_callback(self, action, parameter):
         print("\"Login\" activated")
-        ia.get_logged()
+        if not ia.is_logged():
+            dialog = TwitterDialog(self)
+            response = dialog.run()
+            if response == Gtk.ResponseType.OK:
+                pin = dialog.entry.get_text()
+                ia.get_logged(dialog.auth, pin)
+            elif response == Gtk.ResponseType.CANCEL:
+                pass
+            dialog.destroy()
+        else:
+            print("You are already logged")
 
     # callback function for paste_action
     def logout_callback(self, action, parameter):
@@ -99,7 +160,7 @@ class MyWindow(Gtk.ApplicationWindow):
         # Varibles of the aboutdialog
         image = GdkPixbuf.Pixbuf.new_from_file_at_scale('icono.png',4*12,5*12,True)
         authors = ["Amado Alberto Cabrera Estrada"]
-        comments = "Implementación de un conversor de imagenes a Ascii-Art que permite compartir imagenes hechas de caracteres a traves de twitter."
+        comments = "Implementación de un conversor de imágenes a Ascii-Art que permite compartir imágenes hechas de caracteres a través de Twitter."
         version = "1.0"
 
         # Fill the aboutdialog
@@ -135,20 +196,6 @@ class MyApplication(Gtk.Application):
     def do_startup(self):
         # FIRST THING TO DO: do_startup()
         Gtk.Application.do_startup(self)
-
-        # action without a state created
-        new_action = Gio.SimpleAction.new("new", None)
-        # action connected to the callback function
-        new_action.connect("activate", self.new_callback)
-        # action added to the application
-        self.add_action(new_action)
-
-        # action without a state created
-        save_action = Gio.SimpleAction.new("save", None)
-        # action connected to the callback function
-        save_action.connect("activate", self.save_callback)
-        # action added to the application
-        self.add_action(save_action)
 
         # action without a state created
         quit_action = Gio.SimpleAction.new("quit", None)
@@ -187,15 +234,6 @@ class MyApplication(Gtk.Application):
         self.set_menubar(builder.get_object("menubar"))
         self.set_app_menu(builder.get_object("appmenu"))
 
-    # callback function for new
-    def new_callback(self, action, parameter):
-        print("You clicked \"New\"")
-        self.imagen = ia.ImgToAscii('Images/Amadito.jpeg')
-
-    # callback function for save
-    def save_callback(self, action, parameter):
-        print("You clicked \"Save\"")
-
     # callback function for quit
     def quit_callback(self, action, parameter):
         print("You clicked \"Quit\"")
@@ -214,6 +252,28 @@ class MyApplication(Gtk.Application):
         else:
             print("You unchecked \"Awesome\"")
 
+class TwitterDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, title="Twitter Login", transient_for=parent, flags=0)
+        self.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
+
+        self.set_default_size(150, 100)
+
+        vbox = self.get_content_area()
+
+        label = Gtk.Label(label="Insert your pin")
+        self.entry = Gtk.Entry()
+
+        vbox.pack_start(label, True, True, 0)
+        vbox.pack_end(self.entry, True, True, 0)
+        self.show_all()
+
+        consumer_key = ia.consumer_key
+        consumer_secret = ia.consumer_secret
+        self.auth = ia.tweepy.OAuthHandler(consumer_key, consumer_secret)
+        ia.webbrowser.open(self.auth.get_authorization_url())
 
 app = MyApplication()
 exit_status = app.run(sys.argv)

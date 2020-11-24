@@ -123,19 +123,13 @@ def get_credentials():
         linea = f.readline().strip().split(',')
     return linea[1], linea[2]
 
-def get_logged():
-    if not is_logged():
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-        webbrowser.open(auth.get_authorization_url())
-        pin = input('Verification pin number from twitter.com: ').strip()
-        token = auth.get_access_token(verifier=pin)
-        access_token = token[0]
-        access_token_secret = token[1]
-        auth.set_access_token(access_token, access_token_secret)
-        api = tweepy.API(auth)
-        login(api.me()._json.get('name'), token[0], token[1])
-    else:
-        print("You are already logged")
+def get_logged(auth, pin):
+    token = auth.get_access_token(verifier=pin)
+    access_token = token[0]
+    access_token_secret = token[1]
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+    login(api.me()._json.get('name'), token[0], token[1])
 
 def login(nombre, key, skey):
     """
