@@ -182,5 +182,6 @@ anotaciones.txt
 twepitry.py
 givemeoauth.py
 credentials.txt
+!fondo.jpg
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,macos,jupyternotebooks

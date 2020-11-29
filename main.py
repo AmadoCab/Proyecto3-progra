@@ -1,5 +1,4 @@
 import gi
-from webbrowser import open_new
 import img_ascii as ia
 
 gi.require_version("Gtk", "3.0")
@@ -17,17 +16,16 @@ class MyWindow(Gtk.ApplicationWindow):
 
         ### VARIABLES ###
 
-        self.is_logged = ia.is_logged()
         self.path = ''
 
         ### CONTAINER ###
         
-        grid = Gtk.Grid()
-        self.add(grid)
+        self.grid = Gtk.Grid()
+        self.add(self.grid)
 
         ### ELEMENTS ###
 
-        # Buttons
+        self.all_in_screen()
 
         ### ACTIONS ###
 
@@ -81,6 +79,43 @@ class MyWindow(Gtk.ApplicationWindow):
         # action added to the application
         self.add_action(source_action)
 
+    def all_in_screen(self):
+        fondo_sd = Gtk.Image()
+        fondo_sd.new_from_file('fondo.jpg')
+        fondo_si = Gtk.Image()
+        fondo_si.new_from_file('fondo.jpg')
+
+        self.original = Gtk.ScrolledWindow()
+        self.original.set_max_content_height(500)
+        self.original.set_max_content_width(600)
+        self.original.add(fondo_sd)
+        self.grid.attach(self.original,0,0,6,5)
+
+        self.generado = Gtk.ScrolledWindow()
+        self.generado.set_max_content_height(500)
+        self.generado.set_max_content_width(600)
+        self.generado.add(fondo_si)
+        self.grid.attach(self.generado,7,0,6,5)
+
+        scale_lbl = Gtk.Label(label='Scale')
+        scale_btn = Gtk.Entry()
+        scale_btn.set_placeholder_text('Input the scale')
+        self.grid.attach(scale_lbl,1,6,2,1)
+        self.grid.attach(scale_btn,1,7,2,1)
+
+        generate_btn = Gtk.Button(label='Generate\nimage')
+        self.grid.attach(generate_btn,5,6,2,2)
+
+        quality_lbl = Gtk.Label(label='Quality')
+        quality_btn = Gtk.Button()
+        self.grid.attach(quality_lbl,9,6,2,1)
+        self.grid.attach(quality_btn,9,7,2,1)
+
+    def add_original(self):
+        img_original = Gtk.Image()
+        img_original.new_from_file(self.path)
+        self.original.add(img_original)
+
     # callback function for new
     def new_callback(self, action, widget):
         print("You clicked \"New\"")
@@ -103,6 +138,7 @@ class MyWindow(Gtk.ApplicationWindow):
         elif response == Gtk.ResponseType.CANCEL:
             pass
         dialog.destroy()
+        self.add_original()
 
     # filters for new function
     def add_filters(self, dialog):
@@ -113,11 +149,6 @@ class MyWindow(Gtk.ApplicationWindow):
         filter_img.add_pattern('*.png')
         filter_img.add_pattern('*.eps')
         dialog.add_filter(filter_img)
-
-        filter_any = Gtk.FileFilter()
-        filter_any.set_name("Any files")
-        filter_any.add_pattern("*")
-        dialog.add_filter(filter_any)
 
     # callback function for save
     def save_callback(self, action, parameter):
@@ -150,7 +181,7 @@ class MyWindow(Gtk.ApplicationWindow):
         action.set_state(parameter)
 
     def source_callback(self, action, parameter):
-        open_new("https://github.com/AmadoCab/Proyecto3-progra")
+        ia.webbrowser.open_new("https://github.com/AmadoCab/Proyecto3-progra")
 
     # callback function for about (see the AboutDialog example)
     def about_callback(self, action, parameter):
