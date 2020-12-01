@@ -19,7 +19,7 @@ class MyWindow(Gtk.ApplicationWindow):
         self.path = ''
 
         ### CONTAINER ###
-        
+
         self.grid = Gtk.Grid()
         self.add(self.grid)
 
@@ -82,6 +82,7 @@ class MyWindow(Gtk.ApplicationWindow):
     def all_in_screen(self):
         fondo_sd = Gtk.Image()
         fondo_sd.new_from_file('fondo.jpg')
+
         fondo_si = Gtk.Image()
         fondo_si.new_from_file('fondo.jpg')
 
@@ -97,19 +98,28 @@ class MyWindow(Gtk.ApplicationWindow):
         self.generado.add(fondo_si)
         self.grid.attach(self.generado,7,0,6,5)
 
-        scale_lbl = Gtk.Label(label='Scale')
-        scale_btn = Gtk.Entry()
-        scale_btn.set_placeholder_text('Input the scale')
+        scale_lbl = Gtk.Label(label='Scale (percentage)')
+        adjustment = Gtk.Adjustment(upper=200,
+        step_increment=1, page_increment=10)
+        self.scale_btn = Gtk.SpinButton()
+        self.scale_btn.set_adjustment(adjustment)
         self.grid.attach(scale_lbl,1,6,2,1)
-        self.grid.attach(scale_btn,1,7,2,1)
+        self.grid.attach(self.scale_btn,1,7,2,1)
 
         generate_btn = Gtk.Button(label='Generate\nimage')
         self.grid.attach(generate_btn,5,6,2,2)
 
         quality_lbl = Gtk.Label(label='Quality')
-        quality_btn = Gtk.Button()
+        quality_btn = Gtk.ListStore(str)
+        opciones = [''.join(i[1]) for i in ia.chars.items()]
+        for opcion in opciones:
+            quality_btn.append([opcion])
+        quality_combo = Gtk.ComboBox.new_with_model(quality_btn)
+        renderer_text = Gtk.CellRendererText()
+        quality_combo.pack_start(renderer_text, True)
+        quality_combo.add_attribute(renderer_text, "text", 0)
         self.grid.attach(quality_lbl,9,6,2,1)
-        self.grid.attach(quality_btn,9,7,2,1)
+        self.grid.attach(quality_combo,9,7,2,1)
 
     def add_original(self):
         img_original = Gtk.Image()
