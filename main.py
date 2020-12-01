@@ -12,11 +12,11 @@ import sys
 class MyWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
         Gtk.Window.__init__(self, title="Pic to Ascii-Art", application=app)
-        self.set_default_size(500, 500)
 
         ### VARIABLES ###
 
         self.path = ''
+        self.resultado = 0
 
         ### CONTAINER ###
 
@@ -80,51 +80,81 @@ class MyWindow(Gtk.ApplicationWindow):
         self.add_action(source_action)
 
     def all_in_screen(self):
-        fondo_sd = Gtk.Image()
-        fondo_sd.new_from_file('fondo.jpg')
-
-        fondo_si = Gtk.Image()
-        fondo_si.new_from_file('fondo.jpg')
-
-        self.original = Gtk.ScrolledWindow()
-        self.original.set_max_content_height(500)
-        self.original.set_max_content_width(600)
-        self.original.add(fondo_sd)
-        self.grid.attach(self.original,0,0,6,5)
-
-        self.generado = Gtk.ScrolledWindow()
-        self.generado.set_max_content_height(500)
-        self.generado.set_max_content_width(600)
-        self.generado.add(fondo_si)
-        self.grid.attach(self.generado,7,0,6,5)
-
         scale_lbl = Gtk.Label(label='Scale (percentage)')
         adjustment = Gtk.Adjustment(upper=200,
         step_increment=1, page_increment=10)
         self.scale_btn = Gtk.SpinButton()
         self.scale_btn.set_adjustment(adjustment)
+        self.scale_btn.set_value(50)
         self.grid.attach(scale_lbl,1,6,2,1)
         self.grid.attach(self.scale_btn,1,7,2,1)
 
         generate_btn = Gtk.Button(label='Generate\nimage')
+        generate_btn.connect("clicked", self.gen)
         self.grid.attach(generate_btn,5,6,2,2)
+
+        tuit_btn = Gtk.Button(label='Share with\nTwitter')
+        tuit_btn.connect("clicked", self.tuitear)
+        self.grid.attach(tuit_btn,5,9,2,1)
+
+        invertcolors = Gtk.Button(label='invert image\ncolors')
+        invertcolors.connect("clicked", self.inversion)
+        self.grid.attach(invertcolors,5,8,2,1)
 
         quality_lbl = Gtk.Label(label='Quality')
         quality_btn = Gtk.ListStore(str)
         opciones = [''.join(i[1]) for i in ia.chars.items()]
         for opcion in opciones:
             quality_btn.append([opcion])
-        quality_combo = Gtk.ComboBox.new_with_model(quality_btn)
+        self.quality_combo = Gtk.ComboBox.new_with_model(quality_btn)
         renderer_text = Gtk.CellRendererText()
-        quality_combo.pack_start(renderer_text, True)
-        quality_combo.add_attribute(renderer_text, "text", 0)
+        self.quality_combo.pack_start(renderer_text, True)
+        self.quality_combo.add_attribute(renderer_text, "text", 0)
         self.grid.attach(quality_lbl,9,6,2,1)
-        self.grid.attach(quality_combo,9,7,2,1)
+        self.grid.attach(self.quality_combo,9,7,2,1)
 
-    def add_original(self):
-        img_original = Gtk.Image()
-        img_original.new_from_file(self.path)
-        self.original.add(img_original)
+    def inversion(self, widget):
+        if self.resultado != 0:
+            self.resultado.invertc()
+        else:
+            print('no generaste la imagen')
+
+    def tuitear(self, widget):
+        if self.resultado != 0:
+            try:
+                self.resultado.tweet()
+                print('done')
+            except:
+                print('Imagen muy pesada')
+        else:
+            print('no generaste la imagen')
+
+    def gen(self, widget):
+        if self.path != '':
+            tree_iter = self.quality_combo.get_active_iter()
+            if tree_iter is not None:
+                model = self.quality_combo.get_model()
+                posibilidad = model[tree_iter][0]
+                for i in ia.chars.items():
+                    if list(i[1]) == posibilidad:
+                        calidad = i[0]
+            else:
+                calidad = '16ch'
+
+            if self.scale_btn.get_value_as_int() == 0:
+                escala = 50
+            else:
+                escala = self.scale_btn.get_value_as_int()
+
+            self.resultado = ia.ImgToAscii(self.path,
+                escala/100,
+                calidad)
+            self.resultado.to_blackwhite()
+            self.resultado.rescale()
+            self.resultado.imgmatrix()
+            self.resultado.to_pic()
+        else:
+            print('no se seleccionó imagen')
 
     # callback function for new
     def new_callback(self, action, widget):
@@ -148,7 +178,6 @@ class MyWindow(Gtk.ApplicationWindow):
         elif response == Gtk.ResponseType.CANCEL:
             pass
         dialog.destroy()
-        self.add_original()
 
     # filters for new function
     def add_filters(self, dialog):
@@ -305,7 +334,7 @@ class TwitterDialog(Gtk.Dialog):
         vbox = self.get_content_area()
 
         label = Gtk.Label(label="Insert your pin")
-        self.entry = Gtk.Entry()
+        self.en = Gtk.Entry()
 
         vbox.pack_start(label, True, True, 0)
         vbox.pack_end(self.entry, True, True, 0)
